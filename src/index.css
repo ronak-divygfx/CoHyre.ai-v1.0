@@ -11253,11 +11253,22 @@
 html {
   font-size: var(--font-size);
   scroll-behavior: smooth;
+  /* Optimize scrolling performance */
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-top: 80px;
 }
 
 section {
   position: relative;
   transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Performance optimizations */
+* {
+  /* Enable hardware acceleration for better performance */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -11266,11 +11277,37 @@ section {
   }
 
   .card, [data-slot="card"] {
-    transition: all .3s cubic-bezier(.4, 0, .2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
   }
 
   .card:hover, [data-slot="card"]:hover {
-    transform: translateY(-2px)translateZ(0);
+    transform: translateY(-2px) translateZ(0);
+  }
+
+  /* Optimize animations for better performance */
+  .animate-scroll,
+  .animate-scroll-slow,
+  .animate-scroll-fast,
+  .animate-scroll-medium {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .animate-scroll,
+  .animate-scroll-slow,
+  .animate-scroll-fast,
+  .animate-scroll-medium {
+    animation: none !important;
   }
 }
 

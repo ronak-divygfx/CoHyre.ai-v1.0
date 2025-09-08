@@ -2,56 +2,76 @@ import { Card } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { TrendingUp, TrendingDown, Search, Brain, Target, Rocket, ArrowRight, Zap, Bot, Network, BarChart3, ChevronRight, Sparkles, Activity, Gauge, Clock, Users, MessageCircle, Settings, PlayCircle } from "lucide-react";
 import { motion, useInView } from "motion/react";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, memo, useCallback, useMemo } from "react";
 import referenceImage from 'figma:asset/68103d75ced3e12824c7641bed8696f744171b5c.png';
 
 interface WhyCoHyreSectionProps {
   onNavigate?: (page: string) => void;
 }
 
-export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
+// Optimized animated counter hook with throttling
+const useAnimatedCounter = (end: number, duration: number = 2000, inView: boolean = false) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!inView) return;
+
+    let startTime: number;
+    let animationId: number;
+
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      setCount(Math.floor(progress * end));
+
+      if (progress < 1) {
+        animationId = requestAnimationFrame(animate);
+      }
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [inView, end, duration]);
+
+  return count;
+};
+
+// Throttled mouse tracking for better performance
+const useThrottledMousePosition = (throttleMs: number = 16) => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const lastUpdateRef = useRef(0);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    const now = Date.now();
+    if (now - lastUpdateRef.current >= throttleMs) {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+      lastUpdateRef.current = now;
+    }
+  }, [throttleMs]);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [handleMouseMove]);
+
+  return mousePosition;
+};
+
+export const WhyCoHyreSection = memo(({ onNavigate }: WhyCoHyreSectionProps) => {
   const sectionRef = useRef(null);
   const statsRef = useRef(null);
   const workflowRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
   const statsInView = useInView(statsRef, { once: true, amount: 0.3 });
   const workflowInView = useInView(workflowRef, { once: true, amount: 0.3 });
-  
-  // Mouse tracking for interactive glow effects
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
-  // Animated counter hook
-  const useAnimatedCounter = (end: number, duration: number = 2000, inView: boolean = false) => {
-    const [count, setCount] = useState(0);
-
-    useEffect(() => {
-      if (!inView) return;
-      
-      let startTime: number;
-      const animate = (currentTime: number) => {
-        if (!startTime) startTime = currentTime;
-        const progress = Math.min((currentTime - startTime) / duration, 1);
-        setCount(Math.floor(progress * end));
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        }
-      };
-      
-      requestAnimationFrame(animate);
-    }, [end, duration, inView]);
-
-    return count;
-  };
+  // Optimized mouse tracking with throttling
+  const mousePosition = useThrottledMousePosition(16);
 
   const crisisStats = [
     {
@@ -71,7 +91,7 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
       suffix: "%",
       title: "Cost-per-Hire Surge",
       description: "Average hiring costs have nearly doubled since 2020",
-      trend: "up", 
+      trend: "up",
       borderColor: "border-orange-300/40",
       borderGradient: "from-orange-400 to-orange-600",
       bgGlass: "from-background/60 to-background/30",
@@ -194,7 +214,7 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
             </div>
           </motion.div>
 
-          <motion.h2 
+          <motion.h2
             className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight"
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -206,14 +226,14 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
               In Numbers
             </span>
           </motion.h2>
-          
-          <motion.p 
+
+          <motion.p
             className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Data reveals the true scale of today's hiring challenges. 
+            Data reveals the true scale of today's hiring challenges.
             Traditional methods are failing while AI-powered solutions deliver measurable transformation.
           </motion.p>
         </motion.div>
@@ -251,29 +271,29 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                 >
                   {/* Modern Liquid Glass Card */}
                   <div className={`relative p-8 text-center h-full bg-gradient-to-br ${stat.bgGlass} backdrop-blur-xl ${stat.borderColor} border-2 shadow-lg hover:shadow-xl transition-all duration-500 group overflow-hidden rounded-3xl`}>
-                    
+
                     {/* Glass Border Effect */}
                     <div className={`absolute inset-0 rounded-3xl p-[2px] bg-gradient-to-br ${stat.borderGradient} opacity-0 group-hover:opacity-60 transition-opacity duration-300`}>
                       <div className="absolute inset-[2px] rounded-3xl bg-background/80 backdrop-blur-xl" />
                     </div>
-                    
+
                     {/* Glass Reflection */}
                     <div className="absolute inset-0 bg-gradient-to-br from-white/[0.15] via-transparent to-transparent dark:from-white/[0.08] rounded-3xl pointer-events-none" />
-                    
+
                     {/* Floating Glass Border Accent */}
                     <div className={`absolute top-4 right-4 w-12 h-1 bg-gradient-to-r ${stat.borderGradient} rounded-full opacity-60`} />
-                    
+
                     {/* Content Layer */}
                     <div className="relative z-10">
                       {/* Large Number Display */}
                       <div className="mb-6">
-                        <motion.div 
+                        <motion.div
                           className="relative"
                           whileHover={{ scale: 1.02 }}
                           transition={{ duration: 0.3 }}
                         >
                           <div className="flex items-baseline justify-center gap-1">
-                            <motion.span 
+                            <motion.span
                               className={`text-6xl md:text-7xl font-bold ${stat.textColor} leading-none`}
                               key={stat.number}
                               initial={{ scale: 1.1, opacity: 0 }}
@@ -286,7 +306,7 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                           </div>
                         </motion.div>
                       </div>
-                      
+
                       {/* Content */}
                       <div className="mb-8">
                         <h4 className={`text-lg font-semibold ${stat.textColor} mb-3 leading-tight`}>{stat.title}</h4>
@@ -347,16 +367,16 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                   <Card className="relative p-8 h-full bg-background/70 backdrop-blur-xl border border-border/10 shadow-lg hover:shadow-xl transition-all duration-500 group overflow-hidden rounded-2xl">
                     {/* Sophisticated gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-br from-[#0C8EFF]/3 via-[#9F62ED]/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
-                    
+
                     {/* Premium glass reflection */}
                     <div className="absolute inset-0 bg-gradient-to-br from-background/30 via-transparent to-transparent rounded-2xl" />
-                    
+
                     {/* Floating glass icon container */}
                     <div className="absolute top-6 right-6 z-20">
                       <motion.div
                         className="w-12 h-12 bg-background/80 backdrop-blur-xl border border-border/20 rounded-xl flex items-center justify-center shadow-lg"
-                        whileHover={{ 
-                          scale: 1.1, 
+                        whileHover={{
+                          scale: 1.1,
                           rotate: 5,
                           boxShadow: "0 20px 40px -12px rgba(12, 142, 255, 0.15)"
                         }}
@@ -380,7 +400,7 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                           </span>
                         </motion.div>
                       </div>
-                      
+
                       {/* Large number display */}
                       <div className="mb-6">
                         <motion.div
@@ -388,7 +408,7 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                           whileHover={{ scale: 1.02 }}
                           transition={{ duration: 0.3 }}
                         >
-                          <motion.span 
+                          <motion.span
                             className="text-5xl font-bold text-foreground leading-none block"
                             key={metric.number}
                             initial={{ scale: 1.2, opacity: 0 }}
@@ -412,7 +432,7 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                           />
                         </div>
                       </div>
-                      
+
                       {/* Content section */}
                       <div className="space-y-3">
                         <h4 className="text-xl font-semibold text-foreground leading-tight">
@@ -502,7 +522,7 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                 style={{ transformOrigin: "left center" }}
               />
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-5">
               {[
                 {
@@ -519,7 +539,7 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                 },
                 {
                   icon: Brain,
-                  title: "Screen & Assess", 
+                  title: "Screen & Assess",
                   description: "Advanced evaluation through skills analysis and cultural fit prediction",
                   step: "02",
                   gradient: "from-[#9F62ED] to-[#E241B7]",
@@ -530,7 +550,7 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                   iconBg: "bg-[#9F62ED]/25 dark:bg-[#9F62ED]/35"
                 },
                 {
-                  icon: MessageCircle, 
+                  icon: MessageCircle,
                   title: "Interview & Match",
                   description: "Autonomous AI conducts structured interviews and ranks candidates",
                   step: "03",
@@ -555,7 +575,7 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                 }
               ].map((step, index) => {
                 const Icon = step.icon;
-                
+
                 return (
                   <motion.div
                     key={step.title}
@@ -569,22 +589,22 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                       border border-white/20 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-500 
                       hover:scale-[1.03] hover:border-white/30 dark:hover:border-white/20 cursor-pointer overflow-hidden
                       backdrop-blur-xl group`}>
-                      
+
                       {/* Apple-style Liquid Glass Surface */}
                       <div className="absolute inset-0 bg-gradient-to-b from-white/[0.12] via-white/[0.06] to-transparent dark:from-white/[0.06] dark:via-white/[0.02] rounded-2xl" />
-                      
+
                       {/* Premium Glass Edges - Apple Style */}
                       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent dark:via-white/25" />
                       <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-white/40 to-transparent dark:via-white/20" />
                       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/15" />
                       <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-white/30 to-transparent dark:via-white/15" />
-                      
+
                       {/* Liquid Glass Inner Glow */}
                       <div className="absolute inset-1 rounded-xl bg-gradient-to-br from-white/[0.08] via-transparent to-transparent dark:from-white/[0.04] pointer-events-none" />
-                      
+
                       {/* Step Number Badge - Top Left Glass */}
                       <div className="absolute top-3 left-3 z-20">
-                        <motion.div 
+                        <motion.div
                           className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-background/10 backdrop-blur-xl
                             border border-white/25 dark:border-white/15 flex items-center justify-center
                             shadow-lg group-hover:shadow-xl transition-all duration-300"
@@ -596,23 +616,23 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                           </span>
                         </motion.div>
                       </div>
-                      
+
                       {/* Top Corner Accent - Smaller */}
                       <div className={`absolute top-0 right-0 w-12 h-12 bg-gradient-to-br ${step.accentGradient} opacity-15 rounded-tr-2xl`} />
-                      
+
                       {/* Bottom Illumination - Smaller */}
                       <div className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t ${step.accentGradient} opacity-8 rounded-b-2xl`} />
-                      
+
                       {/* Content Container - Compact */}
                       <div className="relative h-full flex flex-col p-4 sm:p-5 z-10">
                         {/* Icon Section - Smaller */}
                         <div className="flex justify-center mb-4">
-                          <motion.div 
+                          <motion.div
                             className={`w-10 h-10 sm:w-12 sm:h-12 ${step.iconBg} backdrop-blur-xl 
                               border border-white/25 dark:border-white/15 rounded-xl flex items-center justify-center 
                               shadow-lg group-hover:shadow-xl transition-all duration-500`}
-                            whileHover={{ 
-                              scale: 1.1, 
+                            whileHover={{
+                              scale: 1.1,
                               rotate: 5,
                               boxShadow: "0 20px 40px -12px rgba(255, 255, 255, 0.1)"
                             }}
@@ -621,24 +641,24 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                             <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-lg" strokeWidth={1.5} />
                           </motion.div>
                         </div>
-                        
+
                         {/* Content Section - Compact Responsive Typography */}
                         <div className="flex-1 text-center space-y-2 sm:space-y-3">
-                          <motion.h4 
+                          <motion.h4
                             className="text-sm sm:text-base md:text-lg font-semibold text-white drop-shadow-lg group-hover:scale-105 transition-transform duration-300 leading-tight"
                             whileHover={{ y: -1 }}
                           >
                             {step.title}
                           </motion.h4>
-                          
-                          <motion.p 
+
+                          <motion.p
                             className="text-white/75 text-xs sm:text-sm leading-relaxed drop-shadow-sm group-hover:text-white/85 transition-colors duration-300 px-1"
                             whileHover={{ y: -1 }}
                           >
                             {step.description}
                           </motion.p>
                         </div>
-                        
+
                         {/* Flow Metric Badge - Compact */}
                         <div className="mt-3 flex justify-center">
                           <motion.div
@@ -652,7 +672,7 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                             </span>
                           </motion.div>
                         </div>
-                        
+
                         {/* Bottom Section - Flow Connection Dots - Compact */}
                         <div className="flex justify-center items-center space-x-1.5 mt-2">
                           {[...Array(3)].map((_, dotIndex) => (
@@ -672,17 +692,17 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
                           ))}
                         </div>
                       </div>
-                      
+
                       {/* Apple-style Hover Glow */}
                       <motion.div
                         className={`absolute inset-0 bg-gradient-to-br ${step.accentGradient} opacity-0 group-hover:opacity-15 
                           transition-opacity duration-500 rounded-2xl`}
                         initial={false}
                       />
-                      
+
                       {/* Liquid Glass Inner Shadow */}
                       <div className="absolute inset-0 rounded-2xl shadow-inner shadow-black/15" />
-                      
+
                       {/* Apple Glass Highlight - Top */}
                       <div className="absolute inset-x-2 top-1 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/15 rounded-full" />
                     </div>
@@ -695,4 +715,6 @@ export function WhyCoHyreSection({ onNavigate }: WhyCoHyreSectionProps) {
       </div>
     </section>
   );
-}
+});
+
+WhyCoHyreSection.displayName = "WhyCoHyreSection";

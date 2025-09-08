@@ -55,9 +55,55 @@ export default defineConfig({
   build: {
     target: 'esnext',
     outDir: 'dist',
+    // Optimize bundle size and performance
+    minify: 'esbuild',
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor libraries into separate chunks
+          'react-vendor': ['react', 'react-dom'],
+          'motion-vendor': ['motion'],
+          'ui-vendor': ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog', '@radix-ui/react-aspect-ratio', '@radix-ui/react-avatar', '@radix-ui/react-checkbox', '@radix-ui/react-collapsible', '@radix-ui/react-context-menu', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-hover-card', '@radix-ui/react-label', '@radix-ui/react-menubar', '@radix-ui/react-navigation-menu', '@radix-ui/react-popover', '@radix-ui/react-progress', '@radix-ui/react-radio-group', '@radix-ui/react-scroll-area', '@radix-ui/react-select', '@radix-ui/react-separator', '@radix-ui/react-slider', '@radix-ui/react-slot', '@radix-ui/react-switch', '@radix-ui/react-tabs', '@radix-ui/react-toggle', '@radix-ui/react-toggle-group', '@radix-ui/react-tooltip'],
+          'utils-vendor': ['clsx', 'tailwind-merge', 'class-variance-authority'],
+          'charts-vendor': ['recharts'],
+          'forms-vendor': ['react-hook-form', 'react-day-picker'],
+          'carousel-vendor': ['embla-carousel-react'],
+          'other-vendor': ['lucide-react', 'next-themes', 'sonner', 'vaul', 'cmdk', 'input-otp', 'react-resizable-panels']
+        },
+        // Optimize chunk naming
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
+      }
+    },
+    // Enable source maps for debugging in production
+    sourcemap: false,
+    // Optimize CSS
+    cssCodeSplit: true,
   },
   server: {
     port: 3000,
     open: true,
+    // Enable HMR for better development experience
+    hmr: {
+      overlay: false
+    }
   },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'motion',
+      'lucide-react',
+      'clsx',
+      'tailwind-merge'
+    ],
+    exclude: ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog']
+  },
+  // Enable CSS optimization
+  css: {
+    devSourcemap: false
+  }
 });
