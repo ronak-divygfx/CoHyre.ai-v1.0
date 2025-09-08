@@ -26,15 +26,17 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
   const navItems = [
     { name: "Home", page: "home" },
+    { name: "Pricing", page: "pricing" },
+    { name: "About", page: "about" },
     { name: "Candidates", page: "candidates" },
     { name: "Jobs", page: "jobs" },
+    { name: "Contact", page: "contact" },
   ];
 
   return (
     <motion.nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-background/80 backdrop-blur-xl border-b border-border/30" : "bg-transparent"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/80 backdrop-blur-xl border-b border-border/30" : "bg-transparent"
+        }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
@@ -75,30 +77,29 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               <motion.button
                 key={item.name}
                 onClick={() => onNavigate(item.page)}
-                className={`relative px-6 py-3 text-sm font-medium transition-all duration-500 overflow-hidden group ${
-                  currentPage === item.page
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`relative px-6 py-3 text-sm font-medium transition-all duration-500 overflow-hidden group ${currentPage === item.page
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 {/* Liquid Glass Background */}
                 <motion.div
                   className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-xl border border-border/20 shadow-lg opacity-0 group-hover:opacity-100"
-                  initial={{ 
-                    scale: 0.8, 
+                  initial={{
+                    scale: 0.8,
                     opacity: 0,
                     backdropFilter: "blur(0px)"
                   }}
-                  whileHover={{ 
-                    scale: 1, 
+                  whileHover={{
+                    scale: 1,
                     opacity: 1,
                     backdropFilter: "blur(16px)"
                   }}
-                  transition={{ 
-                    duration: 0.4, 
-                    ease: [0.16, 1, 0.3, 1] 
+                  transition={{
+                    duration: 0.4,
+                    ease: [0.16, 1, 0.3, 1]
                   }}
                 />
 
@@ -167,7 +168,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                 whileHover={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
               />
-              
+
               {/* Glass Reflection */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-br from-background/60 via-background/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100"
@@ -199,7 +200,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                 whileHover={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
               />
-              
+
               {/* Glass Reflection */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-br from-background/60 via-background/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100"
@@ -223,7 +224,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               <div className="absolute inset-0 bg-gradient-to-r from-[#0C8EFF] via-[#9F62ED] to-[#0C8EFF] rounded-xl p-[2px] group-hover:p-[2.5px] transition-all duration-300">
                 <div className="w-full h-full bg-background rounded-[10px]" />
               </div>
-              
+
               <button
                 onClick={() => onNavigate("pricing")}
                 className="relative px-5 py-2.5 rounded-xl text-sm font-medium overflow-hidden"
@@ -235,7 +236,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 />
-                
+
                 {/* Gradient Overlay on Hover */}
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-[#0C8EFF]/80 via-[#9F62ED]/80 to-[#0C8EFF]/80 rounded-xl opacity-0 group-hover:opacity-100"
@@ -261,8 +262,41 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
             </motion.div>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          {/* Mobile Right Side Actions */}
+          <div className="md:hidden flex items-center space-x-2">
+            {/* Mobile Theme Toggle */}
+            <motion.button
+              onClick={toggleTheme}
+              className="relative w-10 h-10 rounded-xl overflow-hidden group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {/* Glass Background */}
+              <motion.div
+                className="absolute inset-0 bg-background/40 backdrop-blur-xl border border-border/20 rounded-xl opacity-0 group-hover:opacity-100"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileHover={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+
+              {/* Glass Reflection */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-background/60 via-background/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100"
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 1 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              />
+
+              <div className="relative z-10 w-full h-full flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors duration-300">
+                {theme === "dark" ? (
+                  <Sun className="w-4 h-4" />
+                ) : (
+                  <Moon className="w-4 h-4" />
+                )}
+              </div>
+            </motion.button>
+
+            {/* Mobile Menu Button */}
             <motion.button
               onClick={() => setIsOpen(!isOpen)}
               className="relative w-10 h-10 rounded-xl overflow-hidden group"
@@ -276,7 +310,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                 whileHover={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
               />
-              
+
               <div className="relative z-10 w-full h-full flex items-center justify-center text-foreground">
                 {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </div>
@@ -286,9 +320,8 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
         {/* Mobile Menu with Glass Effect */}
         <motion.div
-          className={`md:hidden overflow-hidden transition-all duration-300 ${
-            isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`md:hidden overflow-hidden transition-all duration-300 ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           <div className="py-4 space-y-2 bg-background/80 backdrop-blur-xl border-t border-border/30">
             {navItems.map((item) => (
@@ -298,11 +331,10 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   onNavigate(item.page);
                   setIsOpen(false);
                 }}
-                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden group ${
-                  currentPage === item.page
-                    ? "text-foreground bg-muted/50"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden group ${currentPage === item.page
+                  ? "text-foreground bg-muted/50"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
                 whileHover={{ x: 4 }}
               >
                 {/* Mobile Glass Effect */}
@@ -312,11 +344,11 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 />
-                
+
                 <span className="relative z-10">{item.name}</span>
               </motion.button>
             ))}
-            
+
             <div className="pt-4 border-t border-border/30 space-y-2">
               {/* Mobile Sign In */}
               <motion.button
@@ -335,7 +367,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                 />
                 <span className="relative z-10">Sign In</span>
               </motion.button>
-              
+
               {/* Mobile Get Started for Free */}
               <div className="p-[2px] bg-gradient-to-r from-[#0C8EFF] via-[#9F62ED] to-[#0C8EFF] rounded-xl">
                 <motion.button
